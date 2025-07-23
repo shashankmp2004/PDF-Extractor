@@ -1,0 +1,85 @@
+{
+  "title": "Artificial Intelligence in Modern Applications",
+  "outline": [
+    {
+      "level": "H1",
+      "text": "Artificial Intelligence in Modern Applications",
+      "page": 1
+    },
+    {
+      "level": "H3",
+      "text": "Dr. Jane Smith, University of Technology",
+      "page": 1
+    },
+    {
+      "level": "H2",
+      "text": "Abstract",
+      "page": 1
+    },
+    {
+      "level": "H1",
+      "text": "1. Introduction",
+      "page": 1
+    },
+    {
+      "level": "H2",
+      "text": "1.1 Historical Context",
+      "page": 1
+    },
+    {
+      "level": "H1",
+      "text": "2. Machine Learning Fundamentals",
+      "page": 2
+    },
+    {
+      "level": "H2",
+      "text": "2.1 Supervised Learning",
+      "page": 2
+    },
+    {
+      "level": "H3",
+      "text": "2.1.1 Classification Algorithms",
+      "page": 2
+    },
+    {
+      "level": "H3",
+      "text": "2.1.2 Regression Algorithms",
+      "page": 2
+    },
+    {
+      "level": "H1",
+      "text": "3. Natural Language Processing",
+      "page": 2
+    },
+    {
+      "level": "H2",
+      "text": "1.2 Current State of the Art",
+      "page": 2
+    },
+    {
+      "level": "H3",
+      "text": "NLP enables computers to understand, interpret, and generate human language in a valuable way.",
+      "page": 2
+    },
+    {
+      "level": "H3",
+      "text": "Modern AI systems leverage deep learning and big data to achieve unprecedented performance.",
+      "page": 2
+    },
+    {
+      "level": "H1",
+      "text": "4. Conclusion",
+      "page": 3
+    },
+    {
+      "level": "H3",
+      "text": "This paper has provided an overview of key AI technologies and their applications.",
+      "page": 3
+    },
+    {
+      "level": "H2",
+      "text": "REFERENCES",
+      "page": 3
+    }
+  ]
+}

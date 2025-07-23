@@ -1,0 +1,25 @@
+# Ignore files that shouldn't be included in Docker image
+*.md
+.git
+.gitignore
+sample_output.json
+demo_output.json
+build_and_run.sh
+build_and_run.bat
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.DS_Store
