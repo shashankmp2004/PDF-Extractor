@@ -5,17 +5,26 @@ from collections import Counter, defaultdict
 
 
 class TextBlock:
-    """Represents a block of text with its formatting properties."""
+    """Represents a block of text with its formatting and positional properties."""
     
     def __init__(self, text: str, font_size: float, font_name: str, 
-                 bbox: Tuple[float, float, float, float], page_num: int):
+                 bbox: Tuple[float, float, float, float], page_num: int, is_italic: bool):
         self.text = text.strip()
         self.font_size = font_size
         self.font_name = font_name
-        self.bbox = bbox  # (x0, y0, x1, y1)
+        self.bbox = bbox
         self.page_num = page_num
+        self.is_italic = is_italic
+        
+        # Extract positional properties from bbox
+        self.x_position = bbox[0]
+        self.y_position = bbox[1]
+        
+        # Determine other style properties
         self.is_bold = self._detect_bold()
-        self.is_all_caps = text.isupper() and len(text) > 1
+        self.is_all_caps = text.isupper() and len(text) > 5
+        
+        # This will be calculated in the second pass
         self.heading_score = 0.0
         
     def _detect_bold(self) -> bool:
@@ -23,252 +32,249 @@ class TextBlock:
         bold_indicators = ['bold', 'black', 'heavy', 'demi', 'semi']
         font_lower = self.font_name.lower()
         return any(indicator in font_lower for indicator in bold_indicators)
-    
-    def get_indentation(self) -> float:
-        """Get the left margin/indentation of the text block."""
-        return self.bbox[0]
-    
-    def get_center_x(self) -> float:
-        """Get the horizontal center of the text block."""
-        return (self.bbox[0] + self.bbox[2]) / 2
-    
-    def is_centered(self, page_width: float, tolerance: float = 50) -> bool:
-        """Check if text is approximately centered on the page."""
-        center_x = self.get_center_x()
-        page_center = page_width / 2
-        return abs(center_x - page_center) < tolerance
 
 
 class DocumentAnalyzer:
-    """Analyzes document structure and extracts headings."""
+    """Analyzes document structure using a two-pass algorithm."""
     
     def __init__(self):
         self.text_blocks: List[TextBlock] = []
-        self.baseline_font_size = 0.0
-        self.baseline_font_name = ""
-        self.page_width = 0.0
         
-        # Regex patterns for numbering
+        # Global analysis results (from first pass)
+        self.body_font_size = 0.0
+        self.body_font_name = ""
+        self.unique_font_sizes = []
+        
+        # Regex for numbering patterns
         self.numbering_patterns = [
-            re.compile(r'^\d+\.'),                        # "1." or "1. Introduction"
-            re.compile(r'^\d+\.\d+'),                     # "1.1" or "1.1 Overview"
-            re.compile(r'^\d+\.\d+\.\d+'),                # "1.1.1" or "1.1.1 Details"
-            re.compile(r'^Chapter\s+\d+', re.IGNORECASE), # "Chapter 1"
-            re.compile(r'^Section\s+[A-Z]', re.IGNORECASE), # "Section A"
-            re.compile(r'^[A-Z]\.'),                      # "A." or "A. Point"
-            re.compile(r'^[IVX]+\.'),                     # Roman numerals "I." or "I. Introduction"
+            re.compile(r'^\d+\.\s'),        # "1. "
+            re.compile(r'^\d+\.\d+'),       # "1.1"
+            re.compile(r'^\d+\.\d+\.\d+'),  # "1.1.1"
+            re.compile(r'^Chapter\s+\d+', re.IGNORECASE),
+            re.compile(r'^Section\s+[A-Z]', re.IGNORECASE),
+            re.compile(r'^[A-Z]\.'),
+            re.compile(r'^[IVX]+\.'),
         ]
     
     def add_text_block(self, text_block: TextBlock):
         """Add a text block to the analyzer."""
-        if text_block.text and len(text_block.text.strip()) > 0:
+        if text_block.text:
             self.text_blocks.append(text_block)
     
-    def calculate_baseline(self):
-        """Calculate the baseline font size and style (most common body text)."""
+    def global_analysis_pass(self):
+        """
+        First pass: Analyze the entire document to establish a baseline style.
+        """
         if not self.text_blocks:
             return
+        
+        # Find the most common font size and name (body text style)
+        font_styles = [(block.font_size, block.font_name) for block in self.text_blocks if len(block.text) > 20]
+        if font_styles:
+            style_counter = Counter(font_styles)
+            most_common_style = style_counter.most_common(1)[0][0]
+            self.body_font_size = most_common_style[0]
+            self.body_font_name = most_common_style[1]
+        
+        # Identify all unique font sizes used in the document
+        all_font_sizes = {block.font_size for block in self.text_blocks}
+        self.unique_font_sizes = sorted(list(all_font_sizes), reverse=True)
+    
+    def classification_pass(self) -> List[TextBlock]:
+        """
+        Second pass: Classify each text block and calculate a heading score.
+        """
+        heading_candidates = []
+        
+        for i, block in enumerate(self.text_blocks):
+            score = 0.0
+            text = block.text.strip()
+
+            # Filter out extremely short text unless it's a clear numbering
+            if len(text) <= 2 and not self._matches_numbering_pattern(text):
+                continue
             
-        # Filter out very short text (likely not body text)
-        body_candidates = [
-            block for block in self.text_blocks 
-            if len(block.text) > 20 and not block.is_all_caps
-        ]
-        
-        if not body_candidates:
-            body_candidates = self.text_blocks
-        
-        # Find most common font size
-        font_sizes = [block.font_size for block in body_candidates]
-        if font_sizes:
-            self.baseline_font_size = statistics.mode(font_sizes)
-        
-        # Find most common font name
-        font_names = [block.font_name for block in body_candidates]
-        if font_names:
-            font_counter = Counter(font_names)
-            self.baseline_font_name = font_counter.most_common(1)[0][0]
-    
-    def detect_numbering_pattern(self, text: str) -> Tuple[bool, int]:
-        """
-        Detect if text follows a numbering pattern.
-        Returns (has_pattern, hierarchy_level)
-        """
-        text_start = text[:20].strip()
-        
-        # Check for multi-level numbering first (most specific)
-        if re.match(r'^\d+\.\d+\.\d+', text_start):
-            return True, 3
-        elif re.match(r'^\d+\.\d+', text_start):
-            return True, 2
-        elif re.match(r'^\d+\.', text_start):
-            return True, 1
-        
-        # Check other patterns
-        for i, pattern in enumerate(self.numbering_patterns[3:], 1):  # Skip the first 3 we already checked
-            if pattern.match(text_start):
-                return True, 1  # Most other patterns are level 1
-        
-        return False, 0
-    
-    def calculate_heading_score(self, block: TextBlock) -> float:
-        """
-        Calculate a heading score for a text block based on multiple factors.
-        Higher score = more likely to be a heading.
-        """
-        score = 0.0
-        
-        # Font size factor (most important)
-        if self.baseline_font_size > 0:
-            size_ratio = block.font_size / self.baseline_font_size
-            if size_ratio > 1.2:  # At least 20% larger
-                score += (size_ratio - 1) * 50
-        
-        # Bold font factor
-        if block.is_bold:
-            score += 20
-        
-        # All caps factor
-        if block.is_all_caps and len(block.text) < 100:
-            score += 15
-        
-        # Short text factor (headings are usually concise)
-        if len(block.text) < 100:
-            score += 10
-        elif len(block.text) > 200:
-            score -= 10
-        
-        # Numbering pattern factor
-        has_numbering, level = self.detect_numbering_pattern(block.text)
-        if has_numbering:
-            score += 30  # Increased from 25
-            # Give bonus for numbered patterns with proper hierarchy levels
-            if level == 2:
-                score += 5  # 1.1 patterns
-            elif level == 3:
-                score += 10  # 1.1.1 patterns
-        
-        # Position factors
-        if hasattr(self, 'page_width') and self.page_width > 0:
-            if block.is_centered(self.page_width):
+            # Rule 1: Size relative to body text
+            if self.body_font_size > 0 and block.font_size > self.body_font_size:
+                score += (block.font_size - self.body_font_size) * 2
+            
+            # Rule 2: Boldness is a strong signal
+            if block.is_bold:
+                score += 10
+            
+            # Rule 3: ALL CAPS is another strong signal
+            if block.is_all_caps:
+                score += 8
+            
+            # Rule 4: Numbering patterns are very reliable
+            if self._matches_numbering_pattern(text):
                 score += 15
+            
+            # Rule 5: Extra space above the line
+            if i > 0:
+                prev_block = self.text_blocks[i-1]
+                if self._has_extra_space_above(block, prev_block):
+                    score += 5
+            
+            # Add block to candidates if it has a meaningful score
+            if score > 18:  # Increased threshold to be more selective
+                block.heading_score = score
+                heading_candidates.append(block)
         
-        # Font name change factor
-        if block.font_name != self.baseline_font_name:
-            score += 10
-        
-        # First page factor (title detection)
-        if block.page_num == 1:
-            score += 5
-        
-        return score
+        return heading_candidates
     
-    def analyze_document(self):
-        """Analyze the entire document and score all text blocks."""
-        self.calculate_baseline()
-        
-        for block in self.text_blocks:
-            block.heading_score = self.calculate_heading_score(block)
+    def _matches_numbering_pattern(self, text: str) -> bool:
+        """Check if text matches any of the numbering patterns."""
+        text_start = text.strip()[:20]
+        return any(pattern.match(text_start) for pattern in self.numbering_patterns)
     
-    def find_title(self) -> Optional[TextBlock]:
-        """Find the document title (highest scoring block on first page)."""
-        first_page_blocks = [
-            block for block in self.text_blocks 
-            if block.page_num == 1 and len(block.text) > 5
-        ]
+    def _has_extra_space_above(self, current_block: TextBlock, prev_block: TextBlock) -> bool:
+        """Check for significant vertical spacing between blocks."""
+        if current_block.page_num != prev_block.page_num:
+            return True  # New page implies space
         
-        if not first_page_blocks:
-            return None
+        vertical_gap = current_block.y_position - prev_block.bbox[3]  # y0_current - y1_prev
         
-        # Return the highest scoring block on the first page
-        return max(first_page_blocks, key=lambda x: x.heading_score)
+        # A gap larger than the typical line height is considered extra space
+        typical_line_height = self.body_font_size * 1.2 if self.body_font_size > 0 else 12.0
+        return vertical_gap > typical_line_height
     
-    def extract_headings(self, min_score: float = 25.0) -> List[TextBlock]:
-        """Extract heading blocks based on their scores."""
-        headings = []
+    def assign_hierarchy(self, heading_candidates: List[TextBlock], is_form: bool = False) -> Tuple[Optional[TextBlock], List[Dict]]:
+        """Assign title and H1/H2/H3 levels to heading candidates, with special handling for forms."""
+        # --- Improved Title Finding Logic ---
+        title_block = self._find_best_title()
         
-        for block in self.text_blocks:
-            # Additional filters to reduce false positives
-            if (block.heading_score >= min_score and 
-                len(block.text.strip()) > 2 and  # Minimum length
-                len(block.text) < 150):  # Maximum length for headings (reduced from 200)
-                
-                # Skip very long sentences (likely body text)
-                sentence_count = block.text.count('.') + block.text.count('!') + block.text.count('?')
-                word_count = len(block.text.split())
-                
-                # More restrictive filtering
-                if (sentence_count <= 1 and word_count <= 15) or block.heading_score > 50:
-                    headings.append(block)
+        # If it's a form, we return the title but an empty outline.
+        if is_form:
+            return title_block, []
+
+        # Remove title from heading candidates if found
+        if title_block:
+            heading_candidates = [h for h in heading_candidates if h != title_block]
+
+        # --- Hierarchy Assignment for Outline ---
+        if not heading_candidates:
+            return title_block, []
+
+        heading_candidates.sort(key=lambda b: (b.page_num, b.y_position))
+
+        clusters = defaultdict(list)
+        for heading in heading_candidates:
+            cluster_key = (round(heading.font_size), heading.is_bold)
+            clusters[cluster_key].append(heading)
         
-        # Sort by page number, then by position on page
-        headings.sort(key=lambda x: (x.page_num, x.bbox[1]))
+        sorted_clusters = sorted(clusters.keys(), key=lambda x: x[0], reverse=True)
         
-        return headings
-    
-    def assign_heading_levels(self, headings: List[TextBlock]) -> List[Dict]:
-        """Assign H1/H2/H3 levels to headings and return structured output."""
-        if not headings:
-            return []
-        
-        # Group headings by similar properties
-        clusters = self._cluster_headings(headings)
-        
-        # Sort clusters by prominence (font size, then score)
-        clusters.sort(key=lambda cluster: (
-            -max(h.font_size for h in cluster),
-            -max(h.heading_score for h in cluster)
-        ))
-        
-        # Assign levels
-        result = []
         level_map = {0: "H1", 1: "H2", 2: "H3"}
         
-        for heading in headings:
-            # Find which cluster this heading belongs to
-            cluster_index = 0
-            for i, cluster in enumerate(clusters):
-                if heading in cluster:
-                    cluster_index = i
-                    break
+        outline = []
+        for heading in heading_candidates:
+            cluster_key = (round(heading.font_size), heading.is_bold)
             
-            # Check for numbering pattern override
-            has_numbering, pattern_level = self.detect_numbering_pattern(heading.text)
-            if has_numbering and pattern_level > 0:
-                level = level_map.get(pattern_level - 1, "H3")
-            else:
-                level = level_map.get(min(cluster_index, 2), "H3")
+            try:
+                rank = sorted_clusters.index(cluster_key)
+            except ValueError:
+                rank = len(level_map) - 1
             
-            result.append({
+            level = level_map.get(min(rank, len(level_map) - 1), "H3")
+            
+            if self._matches_numbering_pattern(heading.text):
+                text_start = heading.text.strip()
+                dots = text_start.split()[0].count('.')
+                if dots == 1: level = "H2"
+                elif dots >= 2: level = "H3"
+
+            if heading.heading_score < 25 and not self._matches_numbering_pattern(heading.text):
+                continue
+
+            outline.append({
                 "level": level,
                 "text": heading.text,
-                "page": heading.page_num
+                "page": heading.page_num,
             })
         
-        return result
+        return title_block, outline
+
+    def _find_best_title(self) -> Tuple[Optional[TextBlock], bool]:
+        """Find the best title candidate and determine if the document is a form."""
+        first_page_blocks = [b for b in self.text_blocks if b.page_num == 0 and len(b.text.strip()) > 1]
+        if not first_page_blocks:
+            return None, False
+
+        # Document type detection
+        first_page_text = " ".join(b.text.lower() for b in first_page_blocks)
+        form_indicators = ['application', 'form', 'name:', 'date:', 'designation:', 's.no']
+        is_form = sum(1 for indicator in form_indicators if indicator in first_page_text) >= 2
+
+        title_candidates = []
+        for block in first_page_blocks:
+            score = 0
+            text_lower = block.text.lower()
+            
+            if block.y_position < 200: score += 30
+            if self.body_font_size > 0 and block.font_size > self.body_font_size:
+                score += (block.font_size - self.body_font_size) * 2
+            if block.is_bold: score += 15
+            if len(block.text) < 4: score -= 20
+            if len(block.text) > 150: score -= 10
+            if any(kw in text_lower for kw in ['page', 'confidential', 'date:']):
+                score -= 50
+            
+            if score > 5:
+                title_candidates.append((block, score))
+
+        if not title_candidates:
+            return None, is_form
+
+        title_candidates.sort(key=lambda x: x[1], reverse=True)
+        best_candidate = title_candidates[0][0]
+
+        # Refined Merging Logic
+        if not is_form:
+            merged_title_text = self._merge_adjacent_title_lines(best_candidate)
+            # Clean up repetitive text common in logos/headers
+            words = merged_title_text.split()
+            if len(words) > 2 and words[0] == words[1] and words[0] == words[2]:
+                 merged_title_text = " ".join(words[2:])
+            best_candidate.text = merged_title_text
+        
+        return best_candidate, is_form
     
-    def _cluster_headings(self, headings: List[TextBlock]) -> List[List[TextBlock]]:
-        """Group headings into clusters based on similar properties."""
-        if not headings:
-            return []
+    def _merge_adjacent_title_lines(self, title_block: TextBlock) -> str:
+        """Merge a title block with adjacent blocks if they share similar styles."""
+        merged_text = [title_block.text]
         
-        clusters = []
-        tolerance = 2.0  # Font size tolerance for clustering
-        
-        for heading in headings:
-            placed = False
+        try:
+            start_index = self.text_blocks.index(title_block)
+        except ValueError:
+            return title_block.text
+
+        for i in range(start_index + 1, min(start_index + 3, len(self.text_blocks))):
+            next_block = self.text_blocks[i]
             
-            # Try to place in existing cluster
-            for cluster in clusters:
-                representative = cluster[0]
-                if (abs(heading.font_size - representative.font_size) <= tolerance and
-                    heading.is_bold == representative.is_bold):
-                    cluster.append(heading)
-                    placed = True
-                    break
-            
-            # Create new cluster if not placed
-            if not placed:
-                clusters.append([heading])
+            if next_block.page_num != title_block.page_num:
+                break
+
+            font_size_diff = abs(next_block.font_size - title_block.font_size)
+            vertical_gap = next_block.y_position - self.text_blocks[i-1].bbox[3]
+            horizontal_diff = abs(next_block.x_position - title_block.x_position)
+
+            if font_size_diff < 1.0 and vertical_gap < (title_block.font_size * 1.2) and horizontal_diff < 20:
+                merged_text.append(next_block.text)
+            else:
+                break
+
+        return " ".join(merged_text).replace("  ", " ")
+    
+    def analyze_document(self) -> Tuple[Optional[str], List[Dict]]:
+        """Run the full two-pass analysis and return the final outline."""
+        self.global_analysis_pass()
+        heading_candidates = self.classification_pass()
         
-        return clusters
+        title_block, is_form = self._find_best_title()
+        
+        _, outline = self.assign_hierarchy(heading_candidates, is_form=is_form)
+        
+        title_text = title_block.text if title_block else ""
+        
+        return title_text, outline

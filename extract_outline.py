@@ -17,7 +17,7 @@ import sys
 
 # Add utils to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-from utils.analysis import DocumentAnalyzer, TextBlock
+from utils.analysis_new import DocumentAnalyzer, TextBlock
 
 
 class PDFOutlineExtractor:
@@ -30,33 +30,32 @@ class PDFOutlineExtractor:
     def extract_text_blocks_from_pdf(self, pdf_path: str) -> List[TextBlock]:
         """Extract text blocks with metadata from a PDF file."""
         text_blocks = []
+        page_width = 0.0
         
         try:
             doc = fitz.open(pdf_path)
             
             for page_num in range(len(doc)):
                 page = doc[page_num]
-                page_width = page.rect.width
+                if page_num == 0:
+                    page_width = page.rect.width
                 
                 # Get text blocks with formatting information
-                blocks = page.get_text("dict")
+                blocks = page.get_text("dict")["blocks"]
                 
-                for block in blocks["blocks"]:
+                for block in blocks:
                     if "lines" in block:  # Text block
                         for line in block["lines"]:
                             for span in line["spans"]:
                                 text = span["text"]
                                 if text.strip():  # Only non-empty text
-                                    bbox = span["bbox"]
-                                    font_size = span["size"]
-                                    font_name = span["font"]
-                                    
                                     text_block = TextBlock(
                                         text=text,
-                                        font_size=font_size,
-                                        font_name=font_name,
-                                        bbox=bbox,
-                                        page_num=page_num + 1
+                                        font_size=span["size"],
+                                        font_name=span["font"],
+                                        bbox=span["bbox"],
+                                        page_num=page_num,
+                                        is_italic='italic' in span["font"].lower()
                                     )
                                     text_blocks.append(text_block)
             
@@ -66,7 +65,7 @@ class PDFOutlineExtractor:
             print(f"Error processing {pdf_path}: {str(e)}")
             return []
         
-        return text_blocks
+        return text_blocks, page_width
     
     def process_single_pdf(self, pdf_path: str) -> Optional[Dict]:
         """Process a single PDF file and extract its outline."""
@@ -74,31 +73,21 @@ class PDFOutlineExtractor:
         start_time = time.time()
         
         # Extract text blocks
-        text_blocks = self.extract_text_blocks_from_pdf(pdf_path)
+        text_blocks, page_width = self.extract_text_blocks_from_pdf(pdf_path)
         
         if not text_blocks:
             print(f"No text blocks found in {pdf_path}")
             return None
         
-        # Initialize analyzer
+        # Initialize analyzer and add text blocks
         analyzer = DocumentAnalyzer()
+        analyzer.set_page_width(page_width)
         
-        # Add text blocks to analyzer
         for block in text_blocks:
             analyzer.add_text_block(block)
         
-        # Analyze document
-        analyzer.analyze_document()
-        
-        # Find title
-        title_block = analyzer.find_title()
-        title = title_block.text if title_block else "Untitled Document"
-        
-        # Extract headings
-        headings = analyzer.extract_headings(min_score=25.0)
-        
-        # Assign levels and create outline
-        outline = analyzer.assign_heading_levels(headings)
+        # Run the three-pass analysis
+        title, outline = analyzer.analyze_document()
         
         # Create final JSON structure
         result = {
