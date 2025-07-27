@@ -2,32 +2,27 @@
   "title": "Overview Foundation Level Extensions",
   "outline": [
     {
-      "level": "H2",
-      "text": "International Software Testing Qualifications Board ",
-      "page": 0
-    },
-    {
-      "level": "H3",
+      "level": "H1",
       "text": "Revision History ",
       "page": 2
     },
     {
-      "level": "H3",
+      "level": "H1",
       "text": "Table of Contents ",
       "page": 3
     },
     {
-      "level": "H3",
+      "level": "H1",
       "text": "Acknowledgements ",
       "page": 4
     },
     {
-      "level": "H3",
+      "level": "H1",
       "text": "Introduction to the Foundation Level Extensions ",
       "page": 5
     },
     {
-      "level": "H3",
+      "level": "H1",
       "text": "Introduction to Foundation Level Agile Tester Extension ",
       "page": 6
     },
@@ -62,12 +57,12 @@
       "page": 8
     },
     {
-      "level": "H3",
+      "level": "H1",
       "text": "Overview of the Foundation Level Extension – Agile Tester ",
       "page": 9
     },
     {
-      "level": "H3",
+      "level": "H1",
       "text": "Syllabus ",
       "page": 9
     },
@@ -82,7 +77,7 @@
       "page": 9
     },
     {
-      "level": "H3",
+      "level": "H1",
       "text": "References ",
       "page": 11
     },

@@ -79,11 +79,19 @@ class DocumentAnalyzer:
         for i, size in enumerate(sorted_sizes):
             if size >= self.baseline_font_size * 1.15:  # Must be meaningfully larger than body text
                 # Check if this size appears frequently enough to be a heading level
-                if size_counter[size] >= 2 or size >= self.baseline_font_size * 1.5:
+                # Or appears on content pages (not title page)
+                blocks_with_size = [b for b in body if b.font_size == size]
+                content_page_blocks = [b for b in blocks_with_size if b.page_num > 0]  # Exclude title page
+                
+                if (size_counter[size] >= 2 or size >= self.baseline_font_size * 1.5) and len(content_page_blocks) > 0:
                     size_tiers.append(size)
         
         # Store size tiers for use in clustering
-        self.heading_size_tiers = size_tiers[:4]  # Max 4 heading levels from font size
+        # If largest font is significantly bigger than second (likely title), exclude it from heading tiers
+        if len(size_tiers) >= 2 and size_tiers[0] > size_tiers[1] * 1.3:
+            self.heading_size_tiers = size_tiers[1:5]  # Skip likely title font, max 4 heading levels
+        else:
+            self.heading_size_tiers = size_tiers[:4]  # Max 4 heading levels from font size
         
         for b in self.text_blocks:
             score = 0
@@ -433,6 +441,9 @@ class DocumentAnalyzer:
         for b in candidates:
             # skip title blocks
             if b.text in title_texts:
+                continue
+            # skip title page blocks
+            if b.page_num == 0:
                 continue
             # only include non-numbered headings if not lowercase or if they're substantial
             if not b.numbering_pattern and (b.text_case == 'Lower' and len(b.text.strip()) < 10):
