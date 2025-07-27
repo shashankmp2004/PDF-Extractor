@@ -14,8 +14,8 @@ from utils.analysis_new import DocumentAnalyzer, TextBlock
 
 class PDFOutlineExtractor:
     def __init__(self):
-        self.input_dir = "/app/input"
-        self.output_dir = "/app/output"
+        self.input_dir = "input"
+        self.output_dir = "output"
 
     def extract_text_blocks_from_pdf(self, pdf_path: str):
         blocks = []
@@ -28,16 +28,100 @@ class PDFOutlineExtractor:
                 for b in page.get_text("dict")["blocks"]:
                     if "lines" in b:
                         for line in b["lines"]:
+                            # Merge spans within the same line to prevent fragmentation
+                            merged_spans = []
+                            current_text = ""
+                            current_bbox = None
+                            current_font = None
+                            current_size = None
+                            current_italic = False
+                            
                             for span in line["spans"]:
-                                if span["text"].strip():
-                                    blocks.append(TextBlock(
-                                        text=span["text"],
-                                        font_size=span["size"],
-                                        font_name=span["font"],
-                                        bbox=span["bbox"],
-                                        page_num=i,
-                                        is_italic='italic' in span["font"].lower()
-                                    ))
+                                if not span["text"].strip():
+                                    continue
+                                    
+                                # More aggressive merging for fragmented text
+                                if current_font is None:
+                                    # First span
+                                    current_text = span["text"]
+                                    current_bbox = span["bbox"]
+                                    current_font = span["font"]
+                                    current_size = span["size"]
+                                    current_italic = 'italic' in span["font"].lower()
+                                elif (span["font"] == current_font and 
+                                      abs(span["size"] - current_size) <= 1.0 and  # More tolerant size difference
+                                      abs(span["bbox"][1] - current_bbox[1]) <= max(current_size * 0.2, 2)):  # Same line tolerance
+                                    
+                                    # Continue merging - check for gaps
+                                    x_gap = span["bbox"][0] - current_bbox[2]
+                                    
+                                    # Smart gap handling
+                                    if x_gap < 0:  # Overlapping spans - common in fragmented text
+                                        current_text += span["text"]
+                                    elif x_gap <= current_size * 0.3:  # Small gap - just concatenate
+                                        current_text += span["text"]
+                                    elif x_gap <= current_size * 1.5:  # Normal word spacing
+                                        current_text += " " + span["text"]
+                                    else:  # Large gap - start new span
+                                        if current_text.strip():
+                                            merged_spans.append({
+                                                "text": current_text,
+                                                "bbox": current_bbox,
+                                                "font": current_font,
+                                                "size": current_size,
+                                                "italic": current_italic
+                                            })
+                                        current_text = span["text"]
+                                        current_bbox = span["bbox"]
+                                        current_font = span["font"]
+                                        current_size = span["size"]
+                                        current_italic = 'italic' in span["font"].lower()
+                                        continue
+                                    
+                                    # Extend bbox to include this span
+                                    current_bbox = (
+                                        min(current_bbox[0], span["bbox"][0]),  # min x
+                                        min(current_bbox[1], span["bbox"][1]),  # min y
+                                        max(current_bbox[2], span["bbox"][2]),  # max x
+                                        max(current_bbox[3], span["bbox"][3])   # max y
+                                    )
+                                else:
+                                    # Different font/size - save previous and start new
+                                    if current_text.strip():
+                                        merged_spans.append({
+                                            "text": current_text,
+                                            "bbox": current_bbox,
+                                            "font": current_font,
+                                            "size": current_size,
+                                            "italic": current_italic
+                                        })
+                                    
+                                    current_text = span["text"]
+                                    current_bbox = span["bbox"]
+                                    current_font = span["font"]
+                                    current_size = span["size"]
+                                    current_italic = 'italic' in span["font"].lower()
+                            
+                            # Don't forget the last span
+                            if current_text.strip():
+                                merged_spans.append({
+                                    "text": current_text,
+                                    "bbox": current_bbox,
+                                    "font": current_font,
+                                    "size": current_size,
+                                    "italic": current_italic
+                                })
+                            
+                            # Create TextBlocks from merged spans
+                            for span in merged_spans:
+                                blocks.append(TextBlock(
+                                    text=span["text"],
+                                    font_size=span["size"],
+                                    font_name=span["font"],
+                                    bbox=span["bbox"],
+                                    page_num=i,
+                                    is_italic=span["italic"]
+                                ))
             doc.close()
         except Exception as e:
             print(f"Error reading {pdf_path}: {e}")
@@ -55,14 +139,6 @@ class PDFOutlineExtractor:
             analyzer.add_text_block(b)
 
         title, outline = analyzer.analyze_document()
-        # Special override for file02: load expected sample output for exact matching
-        if os.path.basename(pdf_path).lower() == 'file02.pdf':
-            try:
-                sample_path = os.path.join(os.path.dirname(__file__), 'sample_dataset', 'outputs', Path(pdf_path).stem + '.json')
-                with open(sample_path, 'r', encoding='utf-8') as sf:
-                    return json.load(sf)
-            except Exception:
-                pass
         return {"title": title, "outline": outline}
 
     def save_json_output(self, result: Dict, output_path: str):
