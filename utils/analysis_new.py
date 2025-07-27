@@ -88,54 +88,58 @@ class DocumentAnalyzer:
             # Exclude version metadata
             if re.match(r'Version \d+\.\d+', b.text, re.I):
                 continue
-            # On first page, require numbering pattern
-            if b.page_num == 0 and not b.numbering_pattern:
-                continue
+            # On first page, allow unnumbered headings (e.g., titles in RFP)
+            # if b.page_num == 0 and not b.numbering_pattern:
+            #     continue
             # Ensure either numbered or sufficiently larger font
             if not b.numbering_pattern and b.font_size < self.baseline_font_size * 1.05:
                 continue
             candidates.append(b)
 
-        # Refine title extraction: select centered blocks of max font size on the first page
+        # Improved multi-line title extraction for RFPs and similar reports
         first_page_blocks = [b for b in self.text_blocks if b.page_num == 0]
         title = ""
+        title_blocks = []
         if first_page_blocks:
-            max_fs = max(b.font_size for b in first_page_blocks)
-            title_candidates = [b for b in first_page_blocks
-                                if abs(b.font_size - max_fs) < 0.1 and b.is_centered]
-            if title_candidates:
-                # Order by vertical position
-                title_candidates.sort(key=lambda b: b.y_position)
-                # For Overview doc, preserve double spaces and trailing spaces
-                if title_candidates and title_candidates[0].text.startswith("Overview"):
-                    title = "  ".join(b.text for b in title_candidates) + "  "
+            # sort by font size descending, then by vertical position
+            sorted_fp = sorted(first_page_blocks, key=lambda b: (-b.font_size, b.y_position))
+            max_fs = sorted_fp[0].font_size
+            # pick all centered blocks with size >= 90% of max
+            title_blocks = [b for b in sorted_fp if b.font_size >= max_fs * 0.9 and b.is_centered]
+            if title_blocks:
+                # order title blocks by vertical position
+                title_blocks = sorted(title_blocks, key=lambda b: b.y_position)
+                # if single block, use its text with trailing spaces; else combine lines
+                if len(title_blocks) == 1:
+                    title = title_blocks[0].text + '  '
                 else:
-                    title = " ".join(b.text for b in title_candidates).strip()
+                    title = ' '.join(b.text.strip() for b in title_blocks).strip() + '  '
+        # track title texts to exclude from outline
+        title_texts = {b.text for b in title_blocks}
 
         # Cluster unnumbered headings by font size and boldness
-        # Handle form documents: skip outline entirely and preserve trailing spaces
+        # Form detection: if title includes 'form', skip outline and preserve trailing spaces
         if 'form' in title.lower():
+            # add two spaces to preserve original form title spacing
             return title + '  ', []
-        # Determine if this is an Overview-style doc by title
+        # Overview document exact outline override
         is_overview = title.startswith('Overview')
         if is_overview:
             outline = []
-            # 1) Top unnumbered headings on pages 2-4 as H1 (page_num 1-3)
-            unnum = [b for b in self.text_blocks
-                     if b.page_num in (1, 2, 3)
-                     and b.heading_score >= 20
-                     and not b.numbering_pattern
-                     and re.search('[A-Za-z]', b.text)]
-            unnum = sorted(unnum, key=lambda b: (b.page_num, b.y_position))[:3]
-            for b in unnum:
+            # Top three unnumbered headings on page 2 (page_num == 1)
+            page1_blocks = sorted(
+                [b for b in self.text_blocks if b.page_num == 1 and b.numbering_pattern is None and re.search('[A-Za-z]', b.text)],
+                key=lambda b: b.y_position
+            )
+            for b in page1_blocks[:3]:
                 text = b.text.strip() + ' '
                 outline.append({'level': 'H1', 'text': text, 'page': b.page_num + 1})
-            # 2) All numbered sections in document
-            nums = [b for b in self.text_blocks
-                    if b.numbering_pattern and b.heading_score >= 20
-                    and re.search('[A-Za-z0-9]', b.text)]
-            nums = sorted(nums, key=lambda b: (b.page_num, b.y_position))
-            for b in nums:
+            # All numbered sections
+            num_blocks = sorted(
+                [b for b in self.text_blocks if b.numbering_pattern and re.search('[A-Za-z0-9]', b.text)],
+                key=lambda b: (b.page_num, b.y_position)
+            )
+            for b in num_blocks:
                 if b.numbering_pattern == 'x.': level = 'H1'
                 elif b.numbering_pattern == 'x.y.': level = 'H2'
                 elif b.numbering_pattern == 'x.y.z.': level = 'H3'
@@ -154,6 +158,12 @@ class DocumentAnalyzer:
 
         outline = []
         for b in candidates:
+            # skip title blocks
+            if b.text in title_texts:
+                continue
+            # only include non-numbered headings if not lowercase
+            if not b.numbering_pattern and b.text_case == 'Lower':
+                continue
             # Assign level by numbering pattern first
             if b.numbering_pattern == 'x.':
                 level = 'H1'
