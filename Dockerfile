@@ -1,12 +1,7 @@
-# Ultra-optimized Dockerfile for competition submission
 FROM python:3.9-slim
-
 WORKDIR /app
-
-# Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies with maximum optimization
 RUN pip install --no-cache-dir --no-compile -r requirements.txt \
     && pip cache purge \
     && rm -rf ~/.cache/pip \
@@ -25,11 +20,9 @@ RUN pip install --no-cache-dir --no-compile -r requirements.txt \
     && rm -rf /usr/share/doc /usr/share/man /usr/share/info /usr/share/locale \
     && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/log/*
 
-# Copy source code
 COPY extract_outline.py .
 COPY utils/ ./utils/
 
-# Create directories
 RUN mkdir -p /app/input /app/output
 
 CMD ["python", "extract_outline.py"]

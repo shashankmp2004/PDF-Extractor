@@ -1,13 +1,12 @@
 import os
 import json
 import time
-import fitz  # PyMuPDF
+import fitz  
 import multiprocessing as mp
 from pathlib import Path
 from typing import List, Dict, Optional
 import sys
 
-# Add utils to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from utils.analysis_new import DocumentAnalyzer, TextBlock
 
@@ -28,7 +27,6 @@ class PDFOutlineExtractor:
                 for b in page.get_text("dict")["blocks"]:
                     if "lines" in b:
                         for line in b["lines"]:
-                            # Merge spans within the same line to prevent fragmentation
                             merged_spans = []
                             current_text = ""
                             current_bbox = None
@@ -40,29 +38,25 @@ class PDFOutlineExtractor:
                                 if not span["text"].strip():
                                     continue
                                     
-                                # More aggressive merging for fragmented text
                                 if current_font is None:
-                                    # First span
                                     current_text = span["text"]
                                     current_bbox = span["bbox"]
                                     current_font = span["font"]
                                     current_size = span["size"]
                                     current_italic = 'italic' in span["font"].lower()
                                 elif (span["font"] == current_font and 
-                                      abs(span["size"] - current_size) <= 1.0 and  # More tolerant size difference
-                                      abs(span["bbox"][1] - current_bbox[1]) <= max(current_size * 0.2, 2)):  # Same line tolerance
+                                      abs(span["size"] - current_size) <= 1.0 and 
+                                      abs(span["bbox"][1] - current_bbox[1]) <= max(current_size * 0.2, 2)):
                                     
-                                    # Continue merging - check for gaps
                                     x_gap = span["bbox"][0] - current_bbox[2]
                                     
-                                    # Smart gap handling
-                                    if x_gap < 0:  # Overlapping spans - common in fragmented text
+                                    if x_gap < 0:
                                         current_text += span["text"]
-                                    elif x_gap <= current_size * 0.3:  # Small gap - just concatenate
+                                    elif x_gap <= current_size * 0.3:
                                         current_text += span["text"]
-                                    elif x_gap <= current_size * 1.5:  # Normal word spacing
+                                    elif x_gap <= current_size * 1.5:
                                         current_text += " " + span["text"]
-                                    else:  # Large gap - start new span
+                                    else:
                                         if current_text.strip():
                                             merged_spans.append({
                                                 "text": current_text,
@@ -78,15 +72,13 @@ class PDFOutlineExtractor:
                                         current_italic = 'italic' in span["font"].lower()
                                         continue
                                     
-                                    # Extend bbox to include this span
                                     current_bbox = (
-                                        min(current_bbox[0], span["bbox"][0]),  # min x
-                                        min(current_bbox[1], span["bbox"][1]),  # min y
-                                        max(current_bbox[2], span["bbox"][2]),  # max x
-                                        max(current_bbox[3], span["bbox"][3])   # max y
+                                        min(current_bbox[0], span["bbox"][0]),
+                                        min(current_bbox[1], span["bbox"][1]),
+                                        max(current_bbox[2], span["bbox"][2]),
+                                        max(current_bbox[3], span["bbox"][3])
                                     )
                                 else:
-                                    # Different font/size - save previous and start new
                                     if current_text.strip():
                                         merged_spans.append({
                                             "text": current_text,
@@ -102,7 +94,6 @@ class PDFOutlineExtractor:
                                     current_size = span["size"]
                                     current_italic = 'italic' in span["font"].lower()
                             
-                            # Don't forget the last span
                             if current_text.strip():
                                 merged_spans.append({
                                     "text": current_text,
@@ -112,7 +103,6 @@ class PDFOutlineExtractor:
                                     "italic": current_italic
                                 })
                             
-                            # Create TextBlocks from merged spans
                             for span in merged_spans:
                                 blocks.append(TextBlock(
                                     text=span["text"],
