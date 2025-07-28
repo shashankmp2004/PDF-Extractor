@@ -1,0 +1,1251 @@
+{
+  "filename": "czxdys2j.pdf",
+  "title": "IBM",
+  "outline": [
+    {
+      "level": "H1",
+      "text": "目次 ",
+      "page": 2
+    },
+    {
+      "level": "H6",
+      "text": "........................................................................................................................ vii ",
+      "page": 2
+    },
+    {
+      "level": "H6",
+      "text": "......................................................................................................................... ix ",
+      "page": 2
+    },
+    {
+      "level": "H6",
+      "text": "本書について ",
+      "page": 2
+    },
+    {
+      "level": "H6",
+      "text": "......................................................................................................... xi ",
+      "page": 2
+    },
+    {
+      "level": "H6",
+      "text": "章問題解決の概要 ",
+      "page": 2
+    },
+    {
+      "level": "H6",
+      "text": "章ログ記録とトレースの使用法 ",
+      "page": 2
+    },
+    {
+      "level": "H6",
+      "text": "A snafilter ",
+      "page": 3
+    },
+    {
+      "level": "H6",
+      "text": "B getsense ",
+      "page": 3
+    },
+    {
+      "level": "H6",
+      "text": "C snagetpd ",
+      "page": 3
+    },
+    {
+      "level": "H6",
+      "text": "D Windows ",
+      "page": 3
+    },
+    {
+      "level": "H6",
+      "text": "クライアント ",
+      "page": 3
+    },
+    {
+      "level": "H6",
+      "text": "E IBM ",
+      "page": 3
+    },
+    {
+      "level": "H6",
+      "text": "へのご意見の送付方法 ",
+      "page": 3
+    },
+    {
+      "level": "H4",
+      "text": "X.25 ",
+      "page": 3
+    },
+    {
+      "level": "H6",
+      "text": "本書について ",
+      "page": 10
+    },
+    {
+      "level": "H4",
+      "text": "5725-H32) ",
+      "page": 10
+    },
+    {
+      "level": "H2",
+      "text": "本書の対象読者 ",
+      "page": 10
+    },
+    {
+      "level": "H2",
+      "text": "本書の使用法 ",
+      "page": 10
+    },
+    {
+      "level": "H3",
+      "text": "本書の構成 ",
+      "page": 10
+    },
+    {
+      "level": "H3",
+      "text": "表記上の規則 ",
+      "page": 11
+    },
+    {
+      "level": "H2",
+      "text": "本書の追加情報の入手先 ",
+      "page": 11
+    },
+    {
+      "level": "H1",
+      "text": "章問題解決の概要 ",
+      "page": 12
+    },
+    {
+      "level": "H2",
+      "text": "診断情報のタイプ ",
+      "page": 12
+    },
+    {
+      "level": "H3",
+      "text": "プログラム・エラー・メッセージ ",
+      "page": 13
+    },
+    {
+      "level": "H3",
+      "text": "ログ・メッセージ ",
+      "page": 14
+    },
+    {
+      "level": "H4",
+      "text": "ログ情報のタイプ ",
+      "page": 14
+    },
+    {
+      "level": "H4",
+      "text": "ログ情報の使用法 ",
+      "page": 15
+    },
+    {
+      "level": "H3",
+      "text": "トレースの紹介 ",
+      "page": 15
+    },
+    {
+      "level": "H4",
+      "text": "トレースのタイプ ",
+      "page": 15
+    },
+    {
+      "level": "H4",
+      "text": "トレースの使用法 ",
+      "page": 16
+    },
+    {
+      "level": "H3",
+      "text": "アラート ",
+      "page": 17
+    },
+    {
+      "level": "H3",
+      "text": "ヘルプ情報 ",
+      "page": 17
+    },
+    {
+      "level": "H4",
+      "text": "Motif ",
+      "page": 17
+    },
+    {
+      "level": "H4",
+      "text": "管理プログラムおよび ",
+      "page": 17
+    },
+    {
+      "level": "H4",
+      "text": "管理プログラムのオンライン・ヘルプ ",
+      "page": 17
+    },
+    {
+      "level": "H1",
+      "text": "2. Select ",
+      "page": 17
+    },
+    {
+      "level": "H4",
+      "text": "コマンド行管理ヘルプ ",
+      "page": 17
+    },
+    {
+      "level": "H4",
+      "text": "CS/AIX ",
+      "page": 17
+    },
+    {
+      "level": "H4",
+      "text": "資料 ",
+      "page": 17
+    },
+    {
+      "level": "H4",
+      "text": "使用ストリング ",
+      "page": 18
+    },
+    {
+      "level": "H1",
+      "text": "章一般的な問題の解決 ",
+      "page": 20
+    },
+    {
+      "level": "H2",
+      "text": "基本的な確認事項 ",
+      "page": 20
+    },
+    {
+      "level": "H3",
+      "text": "デーモンが開始済みであることの確認 ",
+      "page": 20
+    },
+    {
+      "level": "H3",
+      "text": "ローカル ",
+      "page": 21
+    },
+    {
+      "level": "H3",
+      "text": "ノードがアクティブであることを確認します。 ",
+      "page": 21
+    },
+    {
+      "level": "H4",
+      "text": "ローカル ",
+      "page": 21
+    },
+    {
+      "level": "H4",
+      "text": "ノードが活動状態である場合 ",
+      "page": 21
+    },
+    {
+      "level": "H4",
+      "text": "ローカル ",
+      "page": 21
+    },
+    {
+      "level": "H4",
+      "text": "ノードが非アクティブです。 ",
+      "page": 21
+    },
+    {
+      "level": "H3",
+      "text": "他の ",
+      "page": 21
+    },
+    {
+      "level": "H3",
+      "text": "ノードとの通信を確認する ",
+      "page": 21
+    },
+    {
+      "level": "H1",
+      "text": "3. DLC/port ",
+      "page": 22
+    },
+    {
+      "level": "H4",
+      "text": "DLC/ ",
+      "page": 22
+    },
+    {
+      "level": "H4",
+      "text": "ポートを始動できない ",
+      "page": 22
+    },
+    {
+      "level": "H1",
+      "text": "6. SDLC ",
+      "page": 23
+    },
+    {
+      "level": "H1",
+      "text": "7. Enterprise Extender (HPR/IP) ",
+      "page": 23
+    },
+    {
+      "level": "H4",
+      "text": "リンク・ステーションを始動できない ",
+      "page": 23
+    },
+    {
+      "level": "H6",
+      "text": "リンク・ステーションを始動できない ",
+      "page": 23
+    },
+    {
+      "level": "H4",
+      "text": "a. CS/AIX ",
+      "page": 23
+    },
+    {
+      "level": "H6",
+      "text": "リンク・ステーションを始動できない ",
+      "page": 24
+    },
+    {
+      "level": "H4",
+      "text": "X.25 ",
+      "page": 24
+    },
+    {
+      "level": "H4",
+      "text": "X.25 ",
+      "page": 24
+    },
+    {
+      "level": "H6",
+      "text": "トークンリング・リンク・ステーションまたはイーサネット・リンク・ステーションを始 ",
+      "page": 24
+    },
+    {
+      "level": "H6",
+      "text": "動できない ",
+      "page": 24
+    },
+    {
+      "level": "H6",
+      "text": "Enterprise Extender (HPR/IP) ",
+      "page": 25
+    },
+    {
+      "level": "H6",
+      "text": "のリンク・ステーションを始動できない ",
+      "page": 25
+    },
+    {
+      "level": "H3",
+      "text": "または ",
+      "page": 25
+    },
+    {
+      "level": "H3",
+      "text": "Linux ",
+      "page": 25
+    },
+    {
+      "level": "H3",
+      "text": "リモート ",
+      "page": 25
+    },
+    {
+      "level": "H3",
+      "text": "API ",
+      "page": 25
+    },
+    {
+      "level": "H3",
+      "text": "クライアントがそのサーバーを表示できること ",
+      "page": 25
+    },
+    {
+      "level": "H3",
+      "text": "を確認します。 ",
+      "page": 25
+    },
+    {
+      "level": "H4",
+      "text": "表示されたアクティブなノードのリスト ",
+      "page": 26
+    },
+    {
+      "level": "H4",
+      "text": "アクティブなノードが表示され ",
+      "page": 26
+    },
+    {
+      "level": "H3",
+      "text": "Windows ",
+      "page": 26
+    },
+    {
+      "level": "H3",
+      "text": "におけるリモート ",
+      "page": 26
+    },
+    {
+      "level": "H3",
+      "text": "API ",
+      "page": 26
+    },
+    {
+      "level": "H3",
+      "text": "クライアントが自分のサーバーを認識できるか ",
+      "page": 26
+    },
+    {
+      "level": "H3",
+      "text": "どうかの確認 ",
+      "page": 26
+    },
+    {
+      "level": "H1",
+      "text": "2. Windows ",
+      "page": 27
+    },
+    {
+      "level": "H1",
+      "text": "3. Windows ",
+      "page": 27
+    },
+    {
+      "level": "H1",
+      "text": "4. Windows ",
+      "page": 27
+    },
+    {
+      "level": "H1",
+      "text": "5. AIX ",
+      "page": 27
+    },
+    {
+      "level": "H3",
+      "text": "システム構成情報の確認 ",
+      "page": 27
+    },
+    {
+      "level": "H2",
+      "text": "特定の問題の解決 ",
+      "page": 28
+    },
+    {
+      "level": "H3",
+      "text": "Motif ",
+      "page": 28
+    },
+    {
+      "level": "H3",
+      "text": "を使用するプログラムに関する問題の解決 ",
+      "page": 28
+    },
+    {
+      "level": "H1",
+      "text": "1. Motif ",
+      "page": 28
+    },
+    {
+      "level": "H1",
+      "text": "2. X-server ",
+      "page": 28
+    },
+    {
+      "level": "H1",
+      "text": "5. Ensure that the language fileset ",
+      "page": 28
+    },
+    {
+      "level": "H3",
+      "text": "APPC ",
+      "page": 28
+    },
+    {
+      "level": "H3",
+      "text": "または ",
+      "page": 28
+    },
+    {
+      "level": "H3",
+      "text": "CPI-C ",
+      "page": 28
+    },
+    {
+      "level": "H3",
+      "text": "アプリケーションの問題の解決 ",
+      "page": 28
+    },
+    {
+      "level": "H1",
+      "text": "2. Java CPI-C ",
+      "page": 28
+    },
+    {
+      "level": "H1",
+      "text": "10. CPI-C ",
+      "page": 29
+    },
+    {
+      "level": "H3",
+      "text": "の問題の解決 ",
+      "page": 29
+    },
+    {
+      "level": "H3",
+      "text": "アプリケーションの問題の解決 ",
+      "page": 29
+    },
+    {
+      "level": "H3",
+      "text": "アプリケーションの問題の解決 ",
+      "page": 30
+    },
+    {
+      "level": "H3",
+      "text": "TN Server ",
+      "page": 30
+    },
+    {
+      "level": "H3",
+      "text": "での問題の解決 ",
+      "page": 30
+    },
+    {
+      "level": "H4",
+      "text": "ホストに接続できない ",
+      "page": 30
+    },
+    {
+      "level": "H1",
+      "text": "2. TN3270 ",
+      "page": 30
+    },
+    {
+      "level": "H4",
+      "text": "クライアントに接続できない ",
+      "page": 30
+    },
+    {
+      "level": "H1",
+      "text": "2. TN ",
+      "page": 30
+    },
+    {
+      "level": "H3",
+      "text": "リダイレクターでの問題の解決 ",
+      "page": 31
+    },
+    {
+      "level": "H4",
+      "text": "ホストに接続できない ",
+      "page": 31
+    },
+    {
+      "level": "H1",
+      "text": "5. TN ",
+      "page": 31
+    },
+    {
+      "level": "H1",
+      "text": "6. TN ",
+      "page": 31
+    },
+    {
+      "level": "H3",
+      "text": "ネットワーク・ノード・セッションのルーティング問題の解決 ",
+      "page": 32
+    },
+    {
+      "level": "H1",
+      "text": "3. ISR ( ",
+      "page": 32
+    },
+    {
+      "level": "H3",
+      "text": "ゲートウェイ・セッションの問題の解決 ",
+      "page": 32
+    },
+    {
+      "level": "H3",
+      "text": "サーバー管理問題の解決 ",
+      "page": 32
+    },
+    {
+      "level": "H1",
+      "text": "4. AIX ",
+      "page": 32
+    },
+    {
+      "level": "H2",
+      "text": "オンライン・サポート情報 ",
+      "page": 32
+    },
+    {
+      "level": "H2",
+      "text": "サポート担当員への問題の報告 ",
+      "page": 33
+    },
+    {
+      "level": "H3",
+      "text": "サポート担当員のタイプ ",
+      "page": 33
+    },
+    {
+      "level": "H4",
+      "text": "X.25 ",
+      "page": 33
+    },
+    {
+      "level": "H3",
+      "text": "サポート担当員に提出する情報 ",
+      "page": 33
+    },
+    {
+      "level": "H4",
+      "text": "Readme ",
+      "page": 33
+    },
+    {
+      "level": "H4",
+      "text": "ファイル ",
+      "page": 33
+    },
+    {
+      "level": "H4",
+      "text": "担当者に提供するその他の情報 ",
+      "page": 33
+    },
+    {
+      "level": "H4",
+      "text": "サポート担当員のための情報収集のまとめ ",
+      "page": 35
+    },
+    {
+      "level": "H1",
+      "text": "2. /var/sna ",
+      "page": 35
+    },
+    {
+      "level": "H1",
+      "text": "4. AIX ",
+      "page": 35
+    },
+    {
+      "level": "H3",
+      "text": "システム・ダンプ・ファイルの使用 ",
+      "page": 36
+    },
+    {
+      "level": "H4",
+      "text": "ダンプの開始 ",
+      "page": 36
+    },
+    {
+      "level": "H4",
+      "text": "ダンプの分析 ",
+      "page": 36
+    },
+    {
+      "level": "H3",
+      "text": "ネットワーク統計 ",
+      "page": 36
+    },
+    {
+      "level": "H4",
+      "text": "X.25 ",
+      "page": 36
+    },
+    {
+      "level": "H4",
+      "text": "X.25 ",
+      "page": 36
+    },
+    {
+      "level": "H1",
+      "text": "章ログ記録とトレースの使用法 ",
+      "page": 38
+    },
+    {
+      "level": "H2",
+      "text": "Motif ",
+      "page": 38
+    },
+    {
+      "level": "H2",
+      "text": "管理プログラムを使用したロギングの制御 ",
+      "page": 38
+    },
+    {
+      "level": "H2",
+      "text": "コマンド行管理プログラムによるログ記録の制御 ",
+      "page": 38
+    },
+    {
+      "level": "H3",
+      "text": "ログ・ファイルの名前と位置の変更 ",
+      "page": 39
+    },
+    {
+      "level": "H3",
+      "text": "中央ロギングおよびローカル・ロギングの有効化 ",
+      "page": 39
+    },
+    {
+      "level": "H3",
+      "text": "ログに記録するメッセージの指定 ",
+      "page": 40
+    },
+    {
+      "level": "H3",
+      "text": "ログ・ファイル・サイズの制御 ",
+      "page": 40
+    },
+    {
+      "level": "H3",
+      "text": "ログのフォーマットの選択 ",
+      "page": 40
+    },
+    {
+      "level": "H4",
+      "text": "詳細ロギング・メッセージの形式 ",
+      "page": 41
+    },
+    {
+      "level": "H4",
+      "text": "簡略ロギング・メッセージの形式 ",
+      "page": 43
+    },
+    {
+      "level": "H4",
+      "text": "簡略ロギング・メッセージに ",
+      "page": 43
+    },
+    {
+      "level": "H4",
+      "text": "を使用する方法 ",
+      "page": 43
+    },
+    {
+      "level": "H2",
+      "text": "ロギングのフィルター処理 ",
+      "page": 44
+    },
+    {
+      "level": "H2",
+      "text": "使用量のログ記録 ",
+      "page": 45
+    },
+    {
+      "level": "H3",
+      "text": "ライセンス管理の追跡 ",
+      "page": 46
+    },
+    {
+      "level": "H3",
+      "text": "リソースの使用量を確認するための管理ツールの使用 ",
+      "page": 46
+    },
+    {
+      "level": "H2",
+      "text": "トレース ",
+      "page": 46
+    },
+    {
+      "level": "H3",
+      "text": "回線トレース ",
+      "page": 47
+    },
+    {
+      "level": "H1",
+      "text": "5. When you have finished, click ",
+      "page": 48
+    },
+    {
+      "level": "H4",
+      "text": "バイナリー・トレース・ファイルのフォーマット設定 ",
+      "page": 48
+    },
+    {
+      "level": "H1",
+      "text": "2. trc ",
+      "page": 49
+    },
+    {
+      "level": "H3",
+      "text": "API ",
+      "page": 49
+    },
+    {
+      "level": "H3",
+      "text": "トレース ",
+      "page": 49
+    },
+    {
+      "level": "H4",
+      "text": "アプリケーション内からの ",
+      "page": 50
+    },
+    {
+      "level": "H4",
+      "text": "トレースの制御 ",
+      "page": 50
+    },
+    {
+      "level": "H1",
+      "text": "2. CSV DEFINE_TRACE verb ",
+      "page": 51
+    },
+    {
+      "level": "H4",
+      "text": "アプリケーションによるトレース制御を使用不可にする ",
+      "page": 51
+    },
+    {
+      "level": "H4",
+      "text": "自動的に開始した起動可能 ",
+      "page": 51
+    },
+    {
+      "level": "H4",
+      "text": "のトレースの制御 ",
+      "page": 51
+    },
+    {
+      "level": "H4",
+      "text": "トレース・ファイル内容の制御 ",
+      "page": 51
+    },
+    {
+      "level": "H4",
+      "text": "トレースのトレース・ファイル・フォーマット ",
+      "page": 52
+    },
+    {
+      "level": "H4",
+      "text": "API trace formatter ",
+      "page": 54
+    },
+    {
+      "level": "H3",
+      "text": "クライアント ",
+      "page": 55
+    },
+    {
+      "level": "H4",
+      "text": "Motif ",
+      "page": 55
+    },
+    {
+      "level": "H4",
+      "text": "管理プログラムを使用したクライアント ",
+      "page": 55
+    },
+    {
+      "level": "H4",
+      "text": "サーバーのトレースの実行 ",
+      "page": 55
+    },
+    {
+      "level": "H1",
+      "text": "5. When you are finished, click ",
+      "page": 55
+    },
+    {
+      "level": "H4",
+      "text": "コマンド行管理プログラムを使用したクライアント ",
+      "page": 56
+    },
+    {
+      "level": "H4",
+      "text": "サーバーのトレースの実行 ",
+      "page": 56
+    },
+    {
+      "level": "H1",
+      "text": "2. Add the ",
+      "page": 56
+    },
+    {
+      "level": "H4",
+      "text": "クライアント ",
+      "page": 57
+    },
+    {
+      "level": "H4",
+      "text": "サーバー・トレース・ファイルの内容 ",
+      "page": 57
+    },
+    {
+      "level": "H3",
+      "text": "TN Server ",
+      "page": 57
+    },
+    {
+      "level": "H3",
+      "text": "トレース ",
+      "page": 57
+    },
+    {
+      "level": "H4",
+      "text": "サーバー・トレースの実行 ",
+      "page": 57
+    },
+    {
+      "level": "H4",
+      "text": "サーバー・トレース・ファイルの内容 ",
+      "page": 58
+    },
+    {
+      "level": "H3",
+      "text": "内部トレース ",
+      "page": 58
+    },
+    {
+      "level": "H4",
+      "text": "内部トレース・ファイルの制御 ",
+      "page": 58
+    },
+    {
+      "level": "H4",
+      "text": "内部トレース・ファイルの内容 ",
+      "page": 60
+    },
+    {
+      "level": "H1",
+      "text": "付録 ",
+      "page": 62
+    },
+    {
+      "level": "H1",
+      "text": "A snafilter ",
+      "page": 62
+    },
+    {
+      "level": "H1",
+      "text": "および ",
+      "page": 62
+    },
+    {
+      "level": "H1",
+      "text": "の使用 ",
+      "page": 62
+    },
+    {
+      "level": "H2",
+      "text": "バイナリー・トレースのフィルター処理 ",
+      "page": 62
+    },
+    {
+      "level": "H3",
+      "text": "ユーティリティーの実行 ",
+      "page": 62
+    },
+    {
+      "level": "H2",
+      "text": "内部バイナリー・トレース出力をテキスト・ファイルにフォーマットす ",
+      "page": 65
+    },
+    {
+      "level": "H3",
+      "text": "回線トレースのための ",
+      "page": 66
+    },
+    {
+      "level": "H3",
+      "text": "ユーティリティーの実行 ",
+      "page": 66
+    },
+    {
+      "level": "H3",
+      "text": "内部トレース用の ",
+      "page": 66
+    },
+    {
+      "level": "H3",
+      "text": "ユーティリティーの実行 ",
+      "page": 66
+    },
+    {
+      "level": "H3",
+      "text": "ユーティリティーの出力 ",
+      "page": 68
+    },
+    {
+      "level": "H4",
+      "text": "メッセージ・フロー・ドロー ",
+      "page": 68
+    },
+    {
+      "level": "H4",
+      "text": "メッセージ・データ・ダンプ ",
+      "page": 71
+    },
+    {
+      "level": "H1",
+      "text": "付録 ",
+      "page": 74
+    },
+    {
+      "level": "H1",
+      "text": "B getsense ",
+      "page": 74
+    },
+    {
+      "level": "H1",
+      "text": "の使用 ",
+      "page": 74
+    },
+    {
+      "level": "H1",
+      "text": "付録 ",
+      "page": 76
+    },
+    {
+      "level": "H1",
+      "text": "C snagetpd ",
+      "page": 76
+    },
+    {
+      "level": "H1",
+      "text": "の使用 ",
+      "page": 76
+    },
+    {
+      "level": "H2",
+      "text": "オペレーティング・スナゲト ",
+      "page": 76
+    },
+    {
+      "level": "H1",
+      "text": "2. AIX ",
+      "page": 76
+    },
+    {
+      "level": "H2",
+      "text": "コマンド構文とプログラム出力 ",
+      "page": 76
+    },
+    {
+      "level": "H2",
+      "text": "コマンドの制限 ",
+      "page": 77
+    },
+    {
+      "level": "H1",
+      "text": "0. tar ",
+      "page": 77
+    },
+    {
+      "level": "H1",
+      "text": "付録 ",
+      "page": 78
+    },
+    {
+      "level": "H1",
+      "text": "D Windows ",
+      "page": 78
+    },
+    {
+      "level": "H1",
+      "text": "クライアント ",
+      "page": 78
+    },
+    {
+      "level": "H2",
+      "text": "Windows ",
+      "page": 78
+    },
+    {
+      "level": "H2",
+      "text": "クライアントのロギング ",
+      "page": 78
+    },
+    {
+      "level": "H2",
+      "text": "Windows ",
+      "page": 78
+    },
+    {
+      "level": "H2",
+      "text": "クライアントのトレースの制御 ",
+      "page": 78
+    },
+    {
+      "level": "H2",
+      "text": "Windows ",
+      "page": 79
+    },
+    {
+      "level": "H2",
+      "text": "クライアントでの診断情報の収集 ",
+      "page": 79
+    },
+    {
+      "level": "H1",
+      "text": "付録 ",
+      "page": 80
+    },
+    {
+      "level": "H1",
+      "text": "E IBM ",
+      "page": 80
+    },
+    {
+      "level": "H1",
+      "text": "へのご意見の送付方法 ",
+      "page": 80
+    },
+    {
+      "level": "H1",
+      "text": "1. Knowledge Center ",
+      "page": 80
+    },
+    {
+      "level": "H2",
+      "text": "メール・フィードバック・テンプレート ",
+      "page": 80
+    },
+    {
+      "level": "H2",
+      "text": "技術的な問題がある場合 ",
+      "page": 80
+    },
+    {
+      "level": "H1",
+      "text": "付録 ",
+      "page": 82
+    },
+    {
+      "level": "H1",
+      "text": "F ",
+      "page": 82
+    },
+    {
+      "level": "H1",
+      "text": "特記事項 ",
+      "page": 82
+    },
+    {
+      "level": "H2",
+      "text": "商標 ",
+      "page": 83
+    },
+    {
+      "level": "H2",
+      "text": "CS/AIX ",
+      "page": 86
+    },
+    {
+      "level": "H2",
+      "text": "バージョン ",
+      "page": 86
+    },
+    {
+      "level": "H2",
+      "text": "の資料 ",
+      "page": 86
+    },
+    {
+      "level": "H2",
+      "text": "IBM Redbooks ",
+      "page": 87
+    },
+    {
+      "level": "H2",
+      "text": "オペレーティング・システム関連資料 ",
+      "page": 87
+    },
+    {
+      "level": "H1",
+      "text": "5.3 Communications Programming Concepts ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "システム・ネットワーク体系 ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "(SNA) ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "関連資料 ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "z/OS Communications Server ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "関連資料 ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "TCP/IP ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "関連資料 ",
+      "page": 88
+    },
+    {
+      "level": "H2",
+      "text": "X.25 ",
+      "page": 89
+    },
+    {
+      "level": "H2",
+      "text": "関連資料 ",
+      "page": 89
+    },
+    {
+      "level": "H4",
+      "text": "X.25 ",
+      "page": 89
+    },
+    {
+      "level": "H2",
+      "text": "APPC ",
+      "page": 89
+    },
+    {
+      "level": "H2",
+      "text": "関連資料 ",
+      "page": 89
+    },
+    {
+      "level": "H2",
+      "text": "プログラミング関連資料 ",
+      "page": 89
+    },
+    {
+      "level": "H2",
+      "text": "その他の ",
+      "page": 89
+    },
+    {
+      "level": "H2",
+      "text": "ネットワーキング・トピック ",
+      "page": 89
+    },
+    {
+      "level": "H1",
+      "text": "索引 ",
+      "page": 90
+    },
+    {
+      "level": "H6",
+      "text": "［特殊文字］ ",
+      "page": 93
+    }
+  ]
+}

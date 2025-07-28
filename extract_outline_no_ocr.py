@@ -3,10 +3,6 @@ import json
 import time
 import re
 import fitz  # PyMuPDF
-import numpy as np
-import pytesseract
-from PIL import Image
-import io
 import multiprocessing as mp
 from pathlib import Path
 from typing import List, Dict, Optional
@@ -15,16 +11,13 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from utils.analysis_new import DocumentAnalyzer, TextBlock
 
-
 class PDFOutlineExtractor:
     def __init__(self):
         self.input_dir = "input"
         self.output_dir = "output"
-        # OCR configuration for better accuracy
-        self.ocr_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ .,;:!?()[]{}"\'-/\\@#$%^&*+=<>|~`'
 
     def extract_text_blocks_from_pdf(self, pdf_path: str):
-        """Enhanced PDF text extraction with OCR fallback"""
+        """Enhanced PDF text extraction (PyMuPDF only)"""
         blocks = []
         page_width = 0.0
         
@@ -34,16 +27,8 @@ class PDFOutlineExtractor:
                 if i == 0:
                     page_width = page.rect.width
                 
-                # Try PyMuPDF text extraction first
-                pymupdf_blocks = self._extract_pymupdf_blocks(page, i)
-                
-                # If PyMuPDF extraction is poor, use OCR
-                if self._should_use_ocr(pymupdf_blocks, page):
-                    ocr_blocks = self._extract_ocr_blocks(page, i)
-                    # Merge or choose better extraction
-                    blocks.extend(self._merge_extractions(pymupdf_blocks, ocr_blocks))
-                else:
-                    blocks.extend(pymupdf_blocks)
+                # PyMuPDF extraction with enhanced processing
+                blocks.extend(self._extract_pymupdf_blocks(page, i))
             
             doc.close()
                     
@@ -53,7 +38,7 @@ class PDFOutlineExtractor:
         return blocks, page_width
 
     def _extract_pymupdf_blocks(self, page, page_num):
-        """Extract text blocks using PyMuPDF"""
+        """Extract text blocks using PyMuPDF with enhanced processing"""
         blocks = []
         
         for b in page.get_text("dict")["blocks"]:
@@ -146,140 +131,50 @@ class PDFOutlineExtractor:
                         ))
         
         return blocks
-    
-    def _should_use_ocr(self, pymupdf_blocks, page):
-        """Determine if OCR should be used based on extraction quality"""
-        if not pymupdf_blocks:
-            return True
-            
-        # Check if text extraction seems incomplete
-        total_text_length = sum(len(block.text.strip()) for block in pymupdf_blocks)
-        
-        # If very little text extracted, likely scanned document
-        if total_text_length < 100:
-            return True
-            
-        # Check for garbled text (many repeated chars or strange patterns)
-        all_text = ' '.join(block.text for block in pymupdf_blocks)
-        garbled_ratio = len(re.findall(r'(.)\1{3,}', all_text)) / max(len(all_text), 1)
-        
-        if garbled_ratio > 0.1:
-            return True
-            
-        return False
-    
-    def _extract_ocr_blocks(self, page, page_num):
-        """Extract text using OCR (Tesseract)"""
-        blocks = []
-        
-        try:
-            # Convert page to image
-            mat = fitz.Matrix(2.0, 2.0)  # 2x zoom for better OCR
-            pix = page.get_pixmap(matrix=mat)
-            img_data = pix.tobytes("png")
-            
-            # Convert to PIL Image
-            img = Image.open(io.BytesIO(img_data))
-            
-            # Convert to numpy array for processing
-            img_array = np.array(img)
-            
-            # Get OCR data with bounding boxes
-            ocr_data = pytesseract.image_to_data(img, config=self.ocr_config, output_type=pytesseract.Output.DICT)
-            
-            # Process OCR results
-            for i in range(len(ocr_data['text'])):
-                text = ocr_data['text'][i].strip()
-                if not text or ocr_data['conf'][i] < 30:  # Skip low confidence text
-                    continue
-                
-                # Convert OCR coordinates back to PDF coordinates
-                x = ocr_data['left'][i] / 2.0  # Adjust for 2x zoom
-                y = ocr_data['top'][i] / 2.0
-                w = ocr_data['width'][i] / 2.0
-                h = ocr_data['height'][i] / 2.0
-                
-                # Estimate font size from height
-                font_size = h * 0.75  # Approximate conversion
-                
-                bbox = (x, y, x + w, y + h)
-                
-                # Create text block with OCR data
-                block = TextBlock(
-                    text=text,
-                    font_size=font_size,
-                    font_name="OCR-Font",  # Generic font name for OCR text
-                    bbox=bbox,
-                    page_num=page_num,
-                    is_italic=False
-                )
-                
-                blocks.append(block)
-                
-        except Exception as e:
-            print(f"OCR extraction failed: {e}")
-            
-        return blocks
-    
-    def _merge_extractions(self, pymupdf_blocks, ocr_blocks):
-        """Merge PyMuPDF and OCR extractions intelligently"""
-        if not ocr_blocks:
-            return pymupdf_blocks
-        if not pymupdf_blocks:
-            return ocr_blocks
-            
-        # For now, prefer OCR if we got here (PyMuPDF was deemed insufficient)
-        # Future enhancement: spatial matching and selective merging
-        return ocr_blocks
 
     def process_single_pdf(self, pdf_path: str) -> Optional[Dict]:
         print(f"Processing: {os.path.basename(pdf_path)}")
         text_blocks, page_width = self.extract_text_blocks_from_pdf(pdf_path)
         if not text_blocks:
+            print(f"No text blocks found in {pdf_path}")
             return None
 
         analyzer = DocumentAnalyzer()
         analyzer.set_page_width(page_width)
-        for b in text_blocks:
-            analyzer.add_text_block(b)
-
+        
+        for block in text_blocks:
+            analyzer.add_text_block(block)
+        
         title, outline = analyzer.analyze_document()
-        return {"title": title, "outline": outline}
+        
+        return {
+            "filename": os.path.basename(pdf_path),
+            "title": title,
+            "outline": outline
+        }
 
-    def save_json_output(self, result: Dict, output_path: str):
-        try:
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, indent=2, ensure_ascii=False)
-            print(f"Saved: {output_path}")
-        except Exception as e:
-            print(f"Error saving output: {e}")
-
-    def process_pdf_worker(self, pdf_file: str):
-        pdf_path = os.path.join(self.input_dir, pdf_file)
-        output_path = os.path.join(self.output_dir, Path(pdf_file).stem + '.json')
-        result = self.process_single_pdf(pdf_path)
-        if result:
-            self.save_json_output(result, output_path)
-
-    def run_batch_processing(self):
-        os.makedirs(self.output_dir, exist_ok=True)
-        pdf_files = [f for f in os.listdir(self.input_dir) if f.lower().endswith(".pdf")]
+    def process_all_pdfs(self):
+        pdf_files = list(Path(self.input_dir).glob("*.pdf"))
         if not pdf_files:
-            print("No PDFs found")
+            print("No PDF files found in input directory")
             return
+
         print(f"Found {len(pdf_files)} PDF files")
-        num_processes = min(mp.cpu_count(), 8, len(pdf_files))
-        with mp.Pool(processes=num_processes) as pool:
-            pool.map(self.process_pdf_worker, pdf_files)
-
-
-def main():
-    extractor = PDFOutlineExtractor()
-    if len(sys.argv) > 1 and sys.argv[1] == '--dev':
-        extractor.input_dir = os.path.join(os.path.dirname(__file__), 'input')
-        extractor.output_dir = os.path.join(os.path.dirname(__file__), 'output')
-    extractor.run_batch_processing()
-
+        
+        with mp.Pool() as pool:
+            results = pool.map(self.process_single_pdf, [str(f) for f in pdf_files])
+        
+        for result in results:
+            if result:
+                filename = result["filename"]
+                output_file = Path(self.output_dir) / f"{Path(filename).stem}.json"
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    json.dump(result, f, indent=2, ensure_ascii=False)
+                print(f"Generated: {output_file}")
 
 if __name__ == "__main__":
-    main()
+    start_time = time.time()
+    extractor = PDFOutlineExtractor()
+    extractor.process_all_pdfs()  
+    end_time = time.time()
+    print(f"Total processing time: {end_time - start_time:.2f} seconds")

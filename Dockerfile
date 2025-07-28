@@ -2,6 +2,10 @@ FROM python:3.9-slim
 WORKDIR /app
 COPY requirements.txt .
 
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+
 RUN pip install --no-cache-dir --no-compile -r requirements.txt \
     && pip cache purge \
     && rm -rf ~/.cache/pip \
@@ -20,8 +24,9 @@ RUN pip install --no-cache-dir --no-compile -r requirements.txt \
     && rm -rf /usr/share/doc /usr/share/man /usr/share/info /usr/share/locale \
     && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/log/*
 
-COPY extract_outline.py .
+COPY extract_outline_no_ocr.py extract_outline.py
 COPY utils/ ./utils/
+COPY config/ ./config/
 
 RUN mkdir -p /app/input /app/output
 
