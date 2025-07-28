@@ -1,199 +1,98 @@
 # PDF Outline Extractor
 
-A high-performance document analysis tool that extracts hierarchical structure (Title, H1, H2, H3) from PDF files and outputs clean, structured JSON files.
+A Docker-based solution for extracting document outlines from PDF files. This tool processes PDF files and generates structured JSON output containing the document title and heading hierarchy.
 
-## 🚀 Features
+## Features
 
-- **Smart Heuristic Engine**: Analyzes multiple text properties (font size, weight, positioning, numbering patterns)
-- **Multi-core Processing**: Parallel processing for batch operations
-- **Docker Ready**: Containerized for consistent deployment
-- **High Performance**: Processes 50-page PDFs in under 10 seconds
-- **Robust Analysis**: Doesn't rely solely on font size for heading detection
+- Automatic PDF processing from input directory
+- Generates structured JSON output with title and outline
+- Document type detection (forms, posters, technical documents)
+- Advanced text reconstruction and heading classification
+- Font size-based heading level detection
+- Network-isolated execution for security
 
-## 🛠️ Technology Stack
+## Requirements
 
-- **Language**: Python 3.9
-- **PDF Processing**: PyMuPDF (Fitz)
-- **Containerization**: Docker
-- **Parallel Processing**: Python multiprocessing
+- Docker with linux/amd64 platform support
+- CPU-only execution (no GPU required)
+- 8 CPUs and 16 GB RAM recommended
+- No internet access required during execution
 
-## 📁 Project Structure
+## Usage
 
-```
-pdf-outline-extractor/
-├── Dockerfile
-├── requirements.txt
-├── extract_outline.py      # Main extraction script
-├── test_extractor.py       # Test suite
-├── utils/
-│   ├── __init__.py
-│   └── analysis.py         # Heuristic analysis engine
-├── input/                  # Place PDF files here
-├── output/                 # JSON outputs generated here
-└── README.md
-```
-
-## 🏃‍♂️ Quick Start
-
-### 1. Build Docker Image
+### Building the Docker Image
 
 ```bash
-docker build -t pdf-extractor .
+docker build --platform linux/amd64 -t pdf-extractor:latest .
 ```
 
-### 2. Prepare Input Files
-
-Place your PDF files in the `input/` directory:
+### Running the Container
 
 ```bash
-# Example: copy your PDFs
-cp /path/to/your/documents/*.pdf ./input/
+docker run --rm -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output --network none pdf-extractor:latest
 ```
 
-### 3. Run Extraction
+### Directory Structure
 
-```bash
-# Run with mounted volumes
-docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output pdf-extractor
+```
+├── input/          # Place PDF files here
+├── output/         # JSON output files generated here
+├── Dockerfile      # Docker build configuration
+├── extract_outline.py  # Main extraction script
+├── utils/          # Analysis utilities
+│   └── analysis_new.py
+└── requirements.txt    # Python dependencies
 ```
 
-For Windows PowerShell:
-```powershell
-docker run -v ${PWD}/input:/app/input -v ${PWD}/output:/app/output pdf-extractor
-```
+### Output Format
 
-### 4. Check Results
-
-JSON files will be generated in the `output/` directory with the same name as your PDFs.
-
-## 📋 Output Format
-
-Each PDF generates a JSON file with this structure:
+For each `filename.pdf` in the input directory, the tool generates `filename.json` with the following structure:
 
 ```json
 {
-  "title": "Understanding Artificial Intelligence",
+  "title": "Document Title",
   "outline": [
-    {"level": "H1", "text": "Chapter 1: Introduction", "page": 1},
-    {"level": "H2", "text": "1.1 What is AI?", "page": 2},
-    {"level": "H3", "text": "1.1.1 History of AI", "page": 3},
-    {"level": "H2", "text": "1.2 Types of AI", "page": 4}
+    {
+      "level": "H1",
+      "text": "Chapter Title ",
+      "page": 1
+    },
+    {
+      "level": "H2", 
+      "text": "Section Title ",
+      "page": 2
+    }
   ]
 }
 ```
 
-## 🧪 Testing
+## Performance
 
-Run the test suite to verify functionality:
+- Processing time: ≤ 10 seconds for a 50-page PDF
+- Memory efficient: No model files > 200MB
+- CPU-optimized for amd64 architecture
 
-```bash
-# Local testing (without Docker)
-python test_extractor.py
+## Dependencies
 
-# Development mode (uses local input/output dirs)
-python extract_outline.py --dev
-```
+- Python 3.9
+- PyMuPDF (fitz) for PDF processing
+- Standard library modules only
 
-## 🔍 How It Works
+## Technical Approach
 
-### 1. Text Extraction
-- Extracts all text blocks with formatting metadata (font size, name, position)
-- Preserves spatial relationships and page information
+### Document Analysis Pipeline
 
-### 2. Baseline Analysis
-- Identifies the most common font size and style (body text baseline)
-- Uses statistical analysis to establish document norms
+1. **Text Extraction**: Uses PyMuPDF to extract text blocks with font information
+2. **Document Classification**: Detects document type (poster, form, technical document)
+3. **Font Analysis**: Calculates baseline font size and heading size tiers
+4. **Text Reconstruction**: Merges fragmented text and handles overlapping spans
+5. **Heading Detection**: Uses font size, position, and content patterns
+6. **Title Extraction**: Identifies main document title using multiple strategies
+7. **Outline Generation**: Creates hierarchical structure with proper heading levels
 
-### 3. Heuristic Scoring
-The engine scores each text block based on:
-- **Font Size**: Deviation from baseline
-- **Font Weight**: Bold vs regular text
-- **Text Case**: ALL CAPS detection
-- **Numbering Patterns**: Regex matching for "1.", "1.1", "Chapter 1", etc.
-- **Positioning**: Centered text, indentation levels
-- **Length**: Heading-appropriate text length
+### Key Features
 
-### 4. Hierarchy Assignment
-- Clusters headings by similar properties
-- Assigns H1/H2/H3 levels based on prominence
-- Uses numbering patterns to override and refine levels
-
-## ⚡ Performance Optimizations
-
-- **Parallel Processing**: Utilizes multiprocessing for batch operations
-- **Efficient Libraries**: PyMuPDF for fast PDF parsing
-- **Smart Filtering**: Reduces processing overhead with targeted analysis
-- **Memory Management**: Processes files individually to avoid memory issues
-
-## 🔧 Configuration
-
-### Minimum Heading Score
-Adjust the minimum score threshold in `extract_outline.py`:
-
-```python
-headings = analyzer.extract_headings(min_score=25.0)  # Default: 25.0
-```
-
-### Parallel Processing
-The system automatically uses available CPU cores (max 8). To force sequential processing:
-
-```python
-num_processes = 1  # Force single-threaded processing
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **No headings detected**: Lower the `min_score` threshold
-2. **Too many false positives**: Increase the `min_score` threshold
-3. **Memory issues**: Ensure sufficient RAM for large PDFs
-4. **Permission errors**: Check Docker volume mount permissions
-
-### Debug Mode
-
-Enable verbose output by modifying the main script:
-
-```python
-# Add debug prints in process_single_pdf method
-print(f"Analyzing {len(text_blocks)} text blocks")
-print(f"Baseline: {analyzer.baseline_font_size}pt {analyzer.baseline_font_name}")
-```
-
-## 📊 Performance Targets
-
-- **Speed**: ≤ 10 seconds for 50-page PDF
-- **Accuracy**: High precision heading detection
-- **Scalability**: Batch processing of multiple files
-- **Resource Usage**: Optimized for 8 CPU, 16GB RAM environment
-
-## 🌐 Multilingual Support
-
-The system includes basic support for:
-- English numbering patterns
-- Japanese document structures (planned enhancement)
-- Unicode text handling
-
-## 📈 Future Enhancements
-
-- Machine learning model integration
-- Custom regex pattern configuration
-- Interactive web interface
-- Advanced positioning analysis
-- Table of contents validation
-
-## 📜 License
-
-This project is part of the Adobe PDF Challenge implementation.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
----
-
-**Note**: This implementation prioritizes accuracy and performance while maintaining simplicity and maintainability.
+- **Span Merging**: Combines fragmented text spans with gap detection
+- **Font Size Tiers**: Calculates distinct heading levels from font distribution
+- **Overlapping Text Handling**: Resolves duplicate content from overlapping spans
+- **Generic Document Processing**: No hardcoded rules for specific document types

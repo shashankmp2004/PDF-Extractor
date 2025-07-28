@@ -6,6 +6,7 @@ sample_output.json
 demo_output.json
 build_and_run.sh
 build_and_run.bat
+build.sh
 __pycache__/
 *.pyc
 *.pyo
